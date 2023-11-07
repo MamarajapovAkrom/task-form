@@ -1,31 +1,117 @@
-const registerbtn=document.querySelector(".registers")
-const loginbtn=document.querySelector(".logins")
-const registerform=document.querySelector(".register-form")
-const loginform=document.querySelector(".login-form")
-const btn=document.querySelector(".btn")
-const login=document.getElementById("login")
-const parol=document.getElementById("parol")
+const emailSignUp = document.querySelector('.email-signup');
+const emailLogin = document.querySelector('.email-login');
+const signupBoxLink = document.querySelector('#signup-box-link');
+const loginBoxLink = document.querySelector('#login-box-link');
+const signUpName = document.querySelector('#sign-up-name');
+const signUpEmail = document.getElementById("sign-up-email")
+const signUpPassword = document.getElementById("sign-up-password")
+const signInEmail = document.getElementById("sign-in-email")
+const signInPassword = document.getElementById("sign-in-password")
+const signInBtn = document.getElementById("sign-in-btn")
+const signUpBtn = document.getElementById("sign-up-btn")
+const eyeClose = document.querySelectorAll('.eye-slash');
+// const eyeOpen = document.querySelectorAll('.eye')
 
-loginform.style.display="none"
-registerbtn.style.borderBottom="5px solid blue"
-registerbtn.addEventListener('click', ()=>{
-    registerbtn.style.borderBottom="5px solid blue"
-    loginbtn.style.border="none"
-loginform.style.display="none"
-registerform.style.display="block"
-})
-loginbtn.addEventListener('click', ()=>{
-    registerbtn.style.border="none"
-    loginbtn.style.borderBottom="5px solid blue"
-    registerform.style.display="none"
-    loginform.style.display="block"
-    btn.addEventListener('click', ()=>{
-        if(login.value=="John" && parol.value =="John_smit"){
-            console.log("true");
+eyeClose.forEach((item) => {
+    item.addEventListener('click', function()  {
+        if(signUpPassword.type == 'text' || signInPassword.type == 'text'){
+            signUpPassword.type = 'password';
+            signInPassword.type = 'password';
+            item.src = './image/eye-slash.svg';
         }
         else{
-            console.log("false");
+            signUpPassword.type = 'text';
+            signInPassword.type = 'text';
+            item.src = './image/eye.svg';
         }
     })
-    })
-registerbtn.style.borderbottom="5px solid blue"
+})
+
+
+emailSignUp.style.display='none';
+
+signupBoxLink.addEventListener('click', () => {
+    emailLogin.style.display='none';
+    setTimeout(() => {
+        emailSignUp.style.display='block';
+    }, 200)
+    signupBoxLink.classList.add('active');
+    loginBoxLink.classList.remove('active');
+})
+
+loginBoxLink.addEventListener('click', () => {
+    emailSignUp.style.display='none';
+    setTimeout(() => {
+        emailLogin.style.display='block';
+    }, 200)
+    signupBoxLink.classList.remove('active');
+    loginBoxLink.classList.add('active');
+})
+
+signUpBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    if(!signUpName.value || !signUpEmail.value || !signUpPassword.value){
+       alert('Qandaydir input qolib ketdi') 
+    }
+    else{
+        fetch('http://localhost:5000/api/auth/signUp', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                name: signUpName.value,
+                email: signUpEmail.value,
+                password: signUpPassword.value
+            })
+        })
+        .then((res) => res.json())
+        .then((data) => {
+            console.log(data);
+            if(!data.status && data){
+                alert(data.msg + '❌')
+            }
+            else if(data && data.status){
+                emailSignUp.style.display='none';
+                setTimeout(() => {
+                    emailLogin.style.display='block';
+                }, 1000);
+                loginBoxLink.classList.add('active');  
+                signupBoxLink.classList.remove('active');
+                alert('Successfully registered ✅')  
+            }
+        }).catch(err => {
+            console.log(err);
+        })
+
+    }
+})
+
+signInBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    if(!signInEmail.value || !signInPassword.value){
+        alert("Kechirasiz, siz qandaydir bo'sh input qoldirdingiz")
+    }
+    else{
+        fetch('http://localhost:5000/api/auth/signIn', {
+            method: "POST", 
+            headers: {
+                "Content-Type": 'application/json'
+            },
+            body : JSON.stringify({
+                email: signInEmail.value,
+                password: signInPassword.value
+            })
+        })
+        .then((response) => response.json())
+        .then((newUser) => {
+            if(newUser && !newUser.status){
+                alert(newUser.msg + '❌')
+            }
+            else if(newUser && newUser){
+                alert('Successfully login ✔')
+                window.location.replace('/client/client/home/home.html')
+            }
+        })
+    }
+})
